@@ -4,6 +4,9 @@ function applyOperation(op,num1, num2){
         return num1 + num2;
     }
     if (op == "-"){
+        if (num1 === undefined){
+            return -num2;
+        }
         return num1 - num2;
     }
     if (op == "x"){
@@ -45,6 +48,11 @@ function solve(eq){
             i+= 1;
             continue;
         }
+        // If the operator is an opening bracket push it to ops
+        else if (eq[i] == "("){
+            ops.push(eq[i]);
+        }
+        // If the the value is a number, push it to the stack of numbers
         else if (isInt(eq[i])){
             val = 0;
 
@@ -54,7 +62,20 @@ function solve(eq){
             }
             values.push(val);
             i-=1;
-        }else{
+        }
+        //If the operator is a closing bracket solve it
+        else if (eq[i] == ")"){
+            while (ops.length != 0 && ops[ops.length-1] != "("){
+                let val2 = values.pop();
+                let val1 = values.pop();
+                let op = ops.pop();
+
+                values.push(applyOperation(op, val1, val2));
+            }
+            ops.pop();
+        }
+        //If the value is one of the 4 operators solve precendence and push to operator stack
+        else{
             while(ops.length != 0 && precendence(ops[ops.length-1]) >= precendence(eq[i])){
                 let val2 = values.pop();
                 let val1 = values.pop();
@@ -66,12 +87,14 @@ function solve(eq){
         }
         i+=1;
     }
+    //Solve equation
     while (ops.length != 0){
         let val2 = values.pop();
         let val1 = values.pop();
         let op = ops.pop();
         values.push(applyOperation(op,val1,val2));
     }
+    //Return top of values as it is equal to result
     return values[values.length-1];
 }
 
@@ -134,6 +157,12 @@ buttonContainer.forEach(button => {
                     equation = equation.slice(1);
                 }
             }
+        }
+    }
+    if (id == "openingBracket" || id == "closingBracket"){
+        button.onclick = function(){
+            outScreen.innerHTML += button.innerHTML;
+            equation += button.innerHTML;
         }
     }
 });
